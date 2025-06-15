@@ -40,7 +40,7 @@ export default function LoginPage() {
       } else {
         router.push('/');
       }
-    } catch (error) {
+    } catch {
       // handle error if needed
     }
   };
