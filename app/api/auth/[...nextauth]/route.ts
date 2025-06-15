@@ -3,6 +3,28 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '~/app/lib/mongodb';
 import User from '~/app/models/User';
 
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+      isAdmin?: boolean
+    }
+  }
+
+  interface User {
+    isAdmin?: boolean
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    isAdmin?: boolean
+  }
+}
+
 const guessedCGPAMap: Record<string, number> = {
   divij: 9.38,
   akshar: 9.21,
