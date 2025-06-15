@@ -1,9 +1,9 @@
 "use client";
 
 import { Dancing_Script } from 'next/font/google';
-import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const dancingScript = Dancing_Script({
   subsets: ['latin'],

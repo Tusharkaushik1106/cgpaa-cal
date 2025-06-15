@@ -58,13 +58,13 @@ const handler = NextAuth({
     signIn: '/login',
   },
   callbacks: {
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       if (session?.user) {
         session.user.isAdmin = token.isAdmin;
       }
       return session;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user }) {
       if (user) {
         token.isAdmin = user.isAdmin;
       }

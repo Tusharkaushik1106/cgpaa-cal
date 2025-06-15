@@ -13,7 +13,6 @@ interface LeaderboardEntry {
 
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [sorted, setSorted] = useState(false);
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -37,7 +36,6 @@ export default function LeaderboardPage() {
   }, []);
 
   const handleSort = () => {
-    setSorted(true);
     setLeaderboard(prev =>
       [...prev].sort((a, b) => {
         if (b.actualCGPA === null && a.actualCGPA === null) return 0;
@@ -51,8 +49,6 @@ export default function LeaderboardPage() {
   if (status === 'loading') {
     return <div>Loading...</div>;
   }
-
-  const loggedInUser = session?.user?.name;
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">

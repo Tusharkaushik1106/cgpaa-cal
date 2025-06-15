@@ -19,7 +19,6 @@ const validUsers = [
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
