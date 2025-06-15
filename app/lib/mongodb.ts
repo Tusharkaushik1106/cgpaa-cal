@@ -6,6 +6,7 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
+// eslint-disable-next-line no-var
 declare global {
   var mongoose: {
     conn: typeof mongoose | null;
