@@ -113,12 +113,11 @@ export default function Home() {
     if (!session?.user?.name) return;
     setClearing(true);
     setCleared(false);
-    const response = await fetch('/api/clear-cgpa', {
+    await fetch('/api/clear-cgpa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: session.user.name }),
     });
-    const data = await response.json();
     setClearing(false);
     setCleared(true);
     setTimeout(() => setCleared(false), 2000);

@@ -7,7 +7,7 @@ export async function GET() {
     await connectDB();
     const users = await User.find({}).sort({ actualCGPA: -1 });
 
-    const leaderboard = users.map((user: Record<string, any>) => ({
+    const leaderboard = users.map(user => ({
       username: user.username,
       guessedCGPA: user.guessedCGPA,
       actualCGPA: user.actualCGPA,

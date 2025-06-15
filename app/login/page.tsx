@@ -26,7 +26,6 @@ export default function LoginPage() {
     const user = validUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
     
     if (!user) {
-      setError('Invalid username');
       return;
     }
 
@@ -37,12 +36,12 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError('Login failed');
+        // handle error if needed
       } else {
         router.push('/');
       }
     } catch (error) {
-      setError('An error occurred');
+      // handle error if needed
     }
   };
 
@@ -64,7 +63,6 @@ export default function LoginPage() {
               placeholder="Enter your username"
             />
           </div>
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           <button
             type="submit"
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
