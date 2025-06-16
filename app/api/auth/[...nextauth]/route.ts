@@ -46,30 +46,47 @@ const handler = NextAuth({
         username: { label: "Username", type: "text" }
       },
       async authorize(credentials) {
-        if (!credentials?.username) return null;
-        const username = credentials.username.toLowerCase();
-        await connectDB();
-        let user = await User.findOne({ username });
-        if (!user) {
-          user = await User.create({
-            username,
-            guessedCGPA: guessedCGPAMap[username] || 0,
-            isAdmin: username === 'tushar',
-          });
-        } else {
-          if (user.guessedCGPA === 0 && guessedCGPAMap[username]) {
-            user.guessedCGPA = guessedCGPAMap[username];
-          }
-          if (username === 'tushar' && !user.isAdmin) {
-            user.isAdmin = true;
-          }
-          await user.save();
+        console.log('Attempting to authorize with credentials:', credentials);
+        if (!credentials?.username) {
+          console.log('No username provided in credentials.');
+          return null;
         }
-        return {
-          id: user._id.toString(),
-          name: user.username,
-          isAdmin: user.isAdmin,
-        };
+        const username = credentials.username.toLowerCase();
+        try {
+          await connectDB();
+          console.log('MongoDB connected successfully.');
+          let user = await User.findOne({ username });
+          if (!user) {
+            console.log('User not found, attempting to create:', username);
+            user = await User.create({
+              username,
+              guessedCGPA: guessedCGPAMap[username] || 0,
+              isAdmin: username === 'tushar',
+            });
+            console.log('User created:', user);
+          } else {
+            console.log('User found:', user);
+            if (user.guessedCGPA === 0 && guessedCGPAMap[username]) {
+              user.guessedCGPA = guessedCGPAMap[username];
+              await user.save();
+              console.log('User guessedCGPA updated:', user);
+            }
+            if (username === 'tushar' && !user.isAdmin) {
+              user.isAdmin = true;
+              await user.save();
+              console.log('User isAdmin updated:', user);
+            }
+          }
+          console.log('Authorization successful for user:', user.username);
+          return {
+            id: user._id.toString(),
+            name: user.username,
+            isAdmin: user.isAdmin,
+          };
+        } catch (error) {
+          console.error('Error during authorization:', error);
+          return null; // Return null on any error during the process
+        }
       }
     })
   ],
