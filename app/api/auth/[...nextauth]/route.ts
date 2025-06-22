@@ -53,8 +53,10 @@ const handler = NextAuth({
         }
         const username = credentials.username.toLowerCase();
         try {
+          console.log('Attempting to connect to MongoDB...');
           await connectDB();
           console.log('MongoDB connected successfully.');
+          console.log('Attempting to find user:', username);
           let user = await User.findOne({ username });
           if (!user) {
             console.log('User not found, attempting to create:', username);
@@ -63,18 +65,20 @@ const handler = NextAuth({
               guessedCGPA: guessedCGPAMap[username] || 0,
               isAdmin: username === 'tushar',
             });
-            console.log('User created:', user);
+            console.log('User created successfully:', user);
           } else {
             console.log('User found:', user);
             if (user.guessedCGPA === 0 && guessedCGPAMap[username]) {
+              console.log('Updating user guessedCGPA...');
               user.guessedCGPA = guessedCGPAMap[username];
               await user.save();
-              console.log('User guessedCGPA updated:', user);
+              console.log('User guessedCGPA updated successfully:', user);
             }
             if (username === 'tushar' && !user.isAdmin) {
+              console.log('Updating user isAdmin status...');
               user.isAdmin = true;
               await user.save();
-              console.log('User isAdmin updated:', user);
+              console.log('User isAdmin updated successfully:', user);
             }
           }
           console.log('Authorization successful for user:', user.username);
