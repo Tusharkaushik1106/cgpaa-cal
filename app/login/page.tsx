@@ -30,16 +30,11 @@ export default function LoginPage() {
     }
 
     try {
-      const result = await signIn('credentials', {
+      await signIn('credentials', {
         username: user.username,
-        redirect: false,
+        redirect: true,
+        callbackUrl: '/',
       });
-
-      if (result?.error) {
-        // handle error if needed
-      } else {
-        router.push('/');
-      }
     } catch {
       // handle error if needed
     }
