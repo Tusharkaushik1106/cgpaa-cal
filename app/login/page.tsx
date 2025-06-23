@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import Link from 'next/link';
+
 import { Inter } from 'next/font/google';
 import Image from 'next/image';
 

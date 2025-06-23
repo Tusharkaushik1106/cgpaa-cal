@@ -19,9 +19,7 @@ export default function Home() {
   const { data: session } = useSession();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [clearing, setClearing] = useState(false);
-  const [cleared, setCleared] = useState(false);
   const [adminClearing, setAdminClearing] = useState(false);
   const [adminCleared, setAdminCleared] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -95,30 +93,24 @@ export default function Home() {
   const saveCGPA = async (cgpaValue: string) => {
     if (!session?.user?.name || !cgpaValue) return;
     setSaving(true);
-    setSaved(false);
     await fetch('/api/save-cgpa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: session.user.name, actualCGPA: parseFloat(cgpaValue) }),
     });
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
     localStorage.removeItem('unsavedCGPA');
   };
 
   const clearCGPA = async () => {
     if (!session?.user?.name) return;
     setClearing(true);
-    setCleared(false);
     await fetch('/api/clear-cgpa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: session.user.name }),
     });
     setClearing(false);
-    setCleared(true);
-    setTimeout(() => setCleared(false), 2000);
   };
 
   const clearAllCGPA = async () => {
@@ -149,7 +141,7 @@ export default function Home() {
             <span className="text-stroke">CGPA</span> CALCULATOR
           </h1>
           <p className="text-xl md:text-2xl text-gray-400 mb-2">
-            WELCOME TO TUSHAR'S ARENA OF CGPA CALCULATION.
+            WELCOME TO TUSHAR&apos;S ARENA OF CGPA CALCULATION.
           </p>
         </div>
         {/* Glass Card */}
