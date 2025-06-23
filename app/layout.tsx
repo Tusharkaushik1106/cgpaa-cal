@@ -1,29 +1,33 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { getServerSession } from "next-auth";
 import { AuthProvider } from "./providers/AuthProvider";
 import Navigation from "./components/Navigation";
 
-const inter = Inter({ subsets: ["latin"] });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+});
 
 export const metadata: Metadata = {
   title: "CGPA Calculator",
-  description: "Calculate and track your CGPA",
+  description: "Track your academic journey with precision",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession();
+
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>
+    <html lang="en" className={spaceGrotesk.variable}>
+      <body className="antialiased">
+        <AuthProvider session={session}>
           <Navigation />
-          <main className="min-h-screen bg-gray-50">
-            {children}
-          </main>
+          {children}
         </AuthProvider>
       </body>
     </html>

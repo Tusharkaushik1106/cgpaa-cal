@@ -1,14 +1,10 @@
 "use client";
 
-import { Dancing_Script } from 'next/font/google';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-
-const dancingScript = Dancing_Script({
-  subsets: ['latin'],
-  display: 'swap',
-});
+import { useState, useRef, useEffect } from 'react';
+import { gsap } from 'gsap';
+import Layout from './components/Layout';
 
 interface SubjectInput {
   marks: number | '';
@@ -30,6 +26,16 @@ export default function Home() {
   const [adminCleared, setAdminCleared] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.hero-section', { opacity: 0, y: 40, duration: 1, ease: 'power3.out' });
+      gsap.from('.glass-card', { opacity: 0, y: 60, duration: 1, delay: 0.3, ease: 'power3.out' });
+      gsap.from('.table-row', { opacity: 0, y: 20, duration: 0.6, stagger: 0.05, delay: 0.7, ease: 'power2.out' });
+    }, formRef);
+    return () => ctx.revert();
+  }, [numSubjects]);
 
   const getGradePoint = (marks: number): number => {
     if (marks >= 90) return 10;
@@ -45,7 +51,6 @@ export default function Home() {
   const calculateCGPA = () => {
     let totalCreditPoints = 0;
     let totalCredits = 0;
-
     for (const subject of subjects) {
       if (subject.marks !== '' && subject.credits !== '') {
         const gradePoint = getGradePoint(subject.marks);
@@ -53,19 +58,16 @@ export default function Home() {
         totalCredits += subject.credits;
       }
     }
-
     if (totalCredits === 0) {
       setCgpa('N/A');
       setDivision('N/A');
       return;
     }
-
     const calculatedCgpa = (totalCreditPoints / totalCredits).toFixed(2);
     setCgpa(calculatedCgpa);
     setDivision(getDivision(parseFloat(calculatedCgpa)));
     if (session?.user?.name) {
       localStorage.setItem('unsavedCGPA', calculatedCgpa);
-      console.log('Set unsavedCGPA in localStorage:', calculatedCgpa);
       saveCGPA(calculatedCgpa);
     }
   };
@@ -75,7 +77,7 @@ export default function Home() {
     if (cgpaValue >= 6.5) return 'First Division';
     if (cgpaValue >= 5.0) return 'Second Division';
     if (cgpaValue >= 4.0) return 'Third Division';
-    return 'Fail'; // Or appropriate message for CGPA < 4.0
+    return 'Fail';
   };
 
   const handleNumSubjectsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,19 +96,15 @@ export default function Home() {
     if (!session?.user?.name || !cgpaValue) return;
     setSaving(true);
     setSaved(false);
-    console.log('Saving CGPA for', session.user.name, 'with value', cgpaValue);
-    const response = await fetch('/api/save-cgpa', {
+    await fetch('/api/save-cgpa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: session.user.name, actualCGPA: parseFloat(cgpaValue) }),
     });
-    const data = await response.json();
-    console.log('Save CGPA API response:', data);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     localStorage.removeItem('unsavedCGPA');
-    console.log('CGPA saved and unsavedCGPA removed from localStorage');
   };
 
   const clearCGPA = async () => {
@@ -121,7 +119,6 @@ export default function Home() {
     setClearing(false);
     setCleared(true);
     setTimeout(() => setCleared(false), 2000);
-    // Optionally, refresh the page or leaderboard
   };
 
   const clearAllCGPA = async () => {
@@ -144,29 +141,23 @@ export default function Home() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col md:flex-row items-center justify-center p-8 bg-gradient-to-br from-white to-[#f0f0e0] text-black ${dancingScript.className} antialiased relative overflow-hidden`}>
-      {/* Animated Background Elements */}
-      <div className="absolute top-1/4 left-[10%] w-24 h-24 bg-[#d4d4aa] rounded-full opacity-10 animate-float-1 z-0"></div>
-      <div className="absolute bottom-1/4 right-[15%] w-32 h-32 bg-[#a09a8a] rounded-lg opacity-10 animate-float-2 rotate-12 z-0"></div>
-      <div className="absolute top-[15%] right-[5%] w-16 h-16 bg-[#f5f5dc] rounded-full opacity-15 animate-float-3 z-0"></div>
-      <div className="absolute bottom-[5%] left-[20%] w-20 h-20 bg-[#ececec] rounded-xl opacity-10 animate-float-4 -rotate-90 z-0"></div>
-
-      <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-8 md:p-12 text-center md:text-left z-10">
-        <h1 className="text-6xl md:text-7xl font-extrabold text-[#333] tracking-wider leading-tight drop-shadow-lg animate-fade-in-down">
-          <span className="text-[#a09a8a]">CGPA</span> CALCULATOR
-        </h1>
-        <p className="text-xl md:text-2xl text-[#555] mt-6 leading-relaxed animate-fade-in-up">
-          Calculate your Cumulative Grade Point Average with ease. Fast, Visual, and Accurate Results.
-        </p>
-      </div>
-
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8 md:p-12 z-10">
-        <div className="bg-[--color-dark-beige] p-10 md:p-14 rounded-3xl shadow-2xl-custom w-full max-w-xl border border-[--color-accent] transform transition-all duration-500 hover:scale-[1.005] animate-fade-in-right relative">
-          <h2 className="text-3xl font-bold text-[--color-dark-gray] mb-8 text-center">IPU CGPA CALCULATOR</h2>
-
+    <Layout>
+      <div ref={formRef} className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        {/* Hero Section */}
+        <div className="hero-section text-center mb-10">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-white">
+            <span className="text-stroke">CGPA</span> CALCULATOR
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-400 mb-2">
+            WELCOME TO TUSHAR'S ARENA OF CGPA CALCULATION.
+          </p>
+        </div>
+        {/* Glass Card */}
+        <div className="glass-card bg-black/60 glass shadow-2xl rounded-2xl p-8 w-full max-w-3xl mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">IPU CGPA CALCULATOR</h2>
           <div className="mb-8 text-center">
-            <label htmlFor="num-subjects" className="block text-lg font-medium text-[--color-medium-gray] mb-4">
-              Choose number of subjects: <strong className="text-[--color-dark-gray] text-2xl">{numSubjects}</strong>
+            <label htmlFor="num-subjects" className="block text-lg font-medium text-gray-300 mb-2">
+              Number of subjects: <span className="font-bold text-white">{numSubjects}</span>
             </label>
             <input
               type="range"
@@ -175,46 +166,40 @@ export default function Home() {
               max="15"
               value={numSubjects}
               onChange={handleNumSubjectsChange}
-              className="w-3/4 h-3 bg-[--color-accent] rounded-lg appearance-none cursor-pointer accent-[--color-dark-accent] shadow-inner transform transition-transform duration-300 hover:scale-105"
+              className="w-2/3 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-white"
             />
           </div>
-
-          <div className="overflow-x-auto mb-8 border border-[--color-dark-beige] rounded-lg shadow-lg-custom bg-[--color-white] animate-fade-in">
-            <table className="min-w-full bg-transparent table-fixed border-collapse" style={{ borderSpacing: 0 }}>
+          <div className="overflow-x-auto mb-8 rounded-xl">
+            <table className="min-w-full bg-transparent table-fixed border-collapse">
               <thead>
-                <tr className="bg-[--color-light-gray] text-[--color-dark-gray] uppercase text-base leading-normal border-b border-[--color-dark-beige]">
-                  <th className="py-4 px-6 text-left border-0">Subject</th>
-                  <th className="py-4 px-6 text-center border-0">Marks</th>
-                  <th className="py-4 px-6 text-center border-0">Credits</th>
+                <tr className="bg-black/40 text-white uppercase text-base border-b border-gray-700">
+                  <th className="py-3 px-4 text-left">Subject</th>
+                  <th className="py-3 px-4 text-center">Marks</th>
+                  <th className="py-3 px-4 text-center">Credits</th>
                 </tr>
               </thead>
-              <tbody className="text-[--color-medium-gray] text-base font-light">
+              <tbody className="text-white/90 text-base">
                 {subjects.map((subject, index) => (
-                  <tr key={index} className={`
-                    ${index % 2 === 0 ? 'bg-[--color-white]' : 'bg-[#fdfde8]'}
-                    border-b border-[--color-light-gray]
-                    hover:bg-[--color-light-gray]
-                    transition-colors duration-200
-                  `}>
-                    <td className="py-3 px-6 text-left font-medium text-[--color-dark-gray] w-24 border-0">{index + 1}</td>
-                    <td className="py-3 px-6 text-center border-0">
+                  <tr key={index} className="table-row border-b border-gray-800 hover:bg-white/5 transition-colors duration-200">
+                    <td className="py-2 px-4 text-left font-semibold">{index + 1}</td>
+                    <td className="py-2 px-4 text-center">
                       <input
                         type="number"
                         min="0"
                         max="100"
                         value={subject.marks}
                         onChange={(e) => handleSubjectChange(index, 'marks', e.target.value)}
-                        className="w-32 p-3 border border-[--color-light-gray] rounded-md focus:outline-none focus:ring-3 focus:ring-[--color-accent] bg-[--color-white] text-[--color-black] text-center text-lg transition-all duration-200 shadow-sm"
+                        className="w-24 p-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 bg-black/40 text-white text-center text-lg transition-all duration-200"
                         placeholder="0-100"
                       />
                     </td>
-                    <td className="py-3 px-6 text-center border-0">
+                    <td className="py-2 px-4 text-center">
                       <input
                         type="number"
                         min="0"
                         value={subject.credits}
                         onChange={(e) => handleSubjectChange(index, 'credits', e.target.value)}
-                        className="w-32 p-3 border border-[--color-light-gray] rounded-md focus:outline-none focus:ring-3 focus:ring-[--color-accent] bg-[--color-white] text-[--color-black] text-center text-lg transition-all duration-200 shadow-sm"
+                        className="w-24 p-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 bg-black/40 text-white text-center text-lg transition-all duration-200"
                         placeholder="Credits"
                       />
                     </td>
@@ -223,22 +208,18 @@ export default function Home() {
               </tbody>
             </table>
           </div>
-
-          <div className="text-center mb-8">
+          <div className="flex flex-wrap gap-4 justify-center items-center mb-6">
             <button
               onClick={calculateCGPA}
-              className="bg-[--color-accent] hover:bg-[--color-dark-accent] text-white font-bold py-5 px-16 rounded-full shadow-lg-custom transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-5 focus:ring-[--color-dark-beige] text-xl relative overflow-hidden group"
+              className="magnetic-button button-fill py-3 px-8 rounded-xl bg-white text-black font-bold text-lg shadow-lg transition-all duration-300 hover:bg-black hover:text-white border-2 border-white hover:border-white/60"
+              type="button"
             >
-              <span className="relative z-10">Calculate CGPA</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-[--color-accent] to-[--color-dark-accent] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-[--color-accent] to-[--color-dark-accent] rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+              Calculate CGPA
             </button>
-          </div>
-
-          <div className="w-full flex justify-center mb-4 z-20 gap-4 flex-wrap">
             <button
               onClick={() => { if (!saving) router.push('/leaderboard'); }}
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg-custom text-lg transition-all duration-300 mr-2 ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className="magnetic-button button-fill py-3 px-8 rounded-xl bg-black text-white font-bold text-lg shadow-lg border-2 border-white transition-all duration-300 hover:bg-white hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
               disabled={saving}
             >
               Go to Leaderboard
@@ -246,52 +227,45 @@ export default function Home() {
             {session?.user?.name && (
               <button
                 onClick={clearCGPA}
-                className={`bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg-custom text-lg transition-all duration-300 ${clearing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className="magnetic-button button-fill py-3 px-8 rounded-xl bg-black text-white font-bold text-lg shadow-lg border-2 border-white transition-all duration-300 hover:bg-white hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
                 disabled={clearing}
               >
-                {clearing ? 'Clearing...' : 'Clear My CGPA'}
+                Clear My CGPA
               </button>
             )}
-            {session?.user?.name === 'tushar' && (
-              <div className="flex flex-col items-center gap-2">
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={e => setAdminPassword(e.target.value)}
-                  placeholder="Admin password"
-                  className="border px-4 py-2 rounded text-lg"
-                  disabled={adminClearing}
-                />
-                <button
-                  onClick={clearAllCGPA}
-                  className={`bg-black hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg-custom text-lg transition-all duration-300 ${adminClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={adminClearing || !adminPassword}
-                >
-                  {adminClearing ? 'Clearing All...' : 'Clear All CGPA (Admin)'}
-                </button>
-                {adminError && <div className="text-red-600 text-sm font-bold">{adminError}</div>}
-                {adminCleared && <div className="text-green-600 text-sm font-bold">All CGPA Cleared!</div>}
-              </div>
-            )}
           </div>
-
-          {cgpa !== null && (
-            <div className="text-center text-2xl mt-6 font-semibold text-[--color-dark-gray] bg-[--color-light-gray] p-8 rounded-xl shadow-lg-custom border border-[--color-dark-beige] w-full max-w-md mx-auto animate-fade-in-up">
-              <p className="mb-3">Your CGPA: <strong className="text-[--color-accent] text-3xl font-extrabold">{cgpa}</strong></p>
-              <p>Division: <strong className="text-[--color-accent] text-3xl font-extrabold">{division}</strong></p>
-              {saving && <p className="mt-4 text-blue-600 text-lg">Saving...</p>}
-              {saved && <p className="mt-4 text-green-600 text-lg">Saved!</p>}
+          {cgpa && (
+            <div className="text-center mt-6">
+              <div className="inline-block bg-black/70 rounded-xl px-8 py-4 shadow-lg border border-white/10">
+                <span className="text-2xl font-bold text-white">CGPA: {cgpa}</span>
+                {division && <span className="ml-4 text-lg text-gray-300">({division})</span>}
+              </div>
             </div>
           )}
-          {cleared && (
-            <div className="text-center text-green-600 text-lg font-bold mt-2">CGPA Cleared!</div>
+          {session?.user?.isAdmin && (
+            <div className="mt-8 flex flex-col md:flex-row gap-4 items-center justify-center">
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Admin password"
+                className="w-48 p-2 rounded-lg border border-gray-700 bg-black/40 text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+              />
+              <button
+                onClick={clearAllCGPA}
+                className="magnetic-button button-fill py-3 px-8 rounded-xl bg-black text-white font-bold text-lg shadow-lg border-2 border-white transition-all duration-300 hover:bg-white hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                disabled={adminClearing}
+              >
+                Clear All CGPA (Admin)
+              </button>
+              {adminError && <span className="text-red-400 ml-2">{adminError}</span>}
+              {adminCleared && <span className="text-green-400 ml-2">All CGPA cleared!</span>}
+            </div>
           )}
         </div>
       </div>
-
-      <footer className="w-full text-center py-6 mt-auto text-base font-bold text-[--color-dark-gray] z-10">
-        <p>Created by MASTER TUSHAR KAUSHIK SENIOR ARCHITECT</p>
-      </footer>
-    </div>
+    </Layout>
   );
 }
