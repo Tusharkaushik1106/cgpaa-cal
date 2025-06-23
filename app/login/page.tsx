@@ -14,6 +14,7 @@ const validUsers = [
   { username: 'laksh', guessedCGPA: 9.12 },
   { username: 'ahuja', guessedCGPA: 8.06 },
   { username: 'gaurav', guessedCGPA: 9.16 },
+  { username: 'drip queen', guessedCGPA: 8.5 },
 ];
 
 export default function LoginPage() {
@@ -40,7 +41,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm mx-4">
         <h1 className="text-2xl font-bold mb-6 text-center">CGPA Calculator Login</h1>
         <form onSubmit={handleLogin}>
           <div className="mb-4">

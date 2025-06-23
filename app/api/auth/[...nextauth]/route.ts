@@ -36,6 +36,7 @@ const guessedCGPAMap: Record<string, number> = {
   laksh: 9.12,
   ahuja: 8.06,
   gaurav: 9.16,
+  'drip queen': 8.5,
 };
 
 const handler = NextAuth({
