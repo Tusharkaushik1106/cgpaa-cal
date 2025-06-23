@@ -2,8 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
+import { useState } from 'react';
 import Layout from './components/Layout';
 
 interface SubjectInput {
@@ -24,16 +23,6 @@ export default function Home() {
   const [adminCleared, setAdminCleared] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
-  const formRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.hero-section', { opacity: 0, y: 40, duration: 1, ease: 'power3.out' });
-      gsap.from('.glass-card', { opacity: 0, y: 60, duration: 1, delay: 0.3, ease: 'power3.out' });
-      gsap.from('.table-row', { opacity: 0, y: 20, duration: 0.6, stagger: 0.05, delay: 0.7, ease: 'power2.out' });
-    }, formRef);
-    return () => ctx.revert();
-  }, [numSubjects]);
 
   const getGradePoint = (marks: number): number => {
     if (marks >= 90) return 10;
@@ -134,7 +123,7 @@ export default function Home() {
 
   return (
     <Layout>
-      <div ref={formRef} className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
         {/* Hero Section */}
         <div className="hero-section text-center mb-10">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-white">
